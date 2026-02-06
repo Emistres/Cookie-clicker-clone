@@ -8,7 +8,8 @@ import time
 
 class Player:
 
-    # hi ive changed the test
+    #dhirtsdjfnhisfhishhisdtsih
+
     # Will include all data on player
     # Try to setup to interact with save data
 
