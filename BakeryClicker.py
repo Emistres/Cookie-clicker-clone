@@ -8,8 +8,6 @@ import time
 
 class Player:
 
-    #dhirtsdjfnhisfhishhisdtsih
-
     # Will include all data on player
     # Try to setup to interact with save data
 
@@ -55,9 +53,100 @@ class Buildings:
 
 
 
+def get_mouse():
+    # Gets coordinates of mouse cursor that frame
+
+    mouse_x, mouse_y = pygame.mouse.get_pos()
+    
+    return mouse_x, mouse_y
+    
 
 
+def game_loop(font,player,clock,screen):
 
+    while True:
+        # locks game to 60fps
+        clock.tick(60)
+
+        # Clears screen every frame to update dynamic text
+        screen.fill((0, 0, 0))
+
+        # Loads bread icon every frame
+        pygame.draw.rect(screen, (181, 103, 0), (150, 1080/4, 500, 500)) 
+
+        # Update coin counter display value
+        font_unique = pygame.font.SysFont(None, 100)
+        text = font_unique.render(str(player.coins), True, (255, 255, 255))
+        text_rect = text.get_rect(center=(400, 125))
+        screen.blit(text, text_rect)
+
+        # Check mouse location and gives an x and y co-ordinate
+        mouse_x, mouse_y = get_mouse()
+
+        # Checks if mouse is hovering over the bakery shape
+        on_box = False
+        if mouse_x >= 150 and mouse_x <= 650:
+            if mouse_y >= 270 and mouse_y <= 770:
+                on_box = True
+
+        
+        # TO ADD: save data when to a file when this is called
+        for event in pygame.event.get():
+            # Ends game when button close is pressed
+            if event.type == QUIT:
+                return
+            
+            # Checks if mouse clicks on box
+            elif event.type == MOUSEBUTTONDOWN and on_box == True:
+                player.coin_update("Click")               
+            
+        pygame.display.flip()
+
+
+def main_menu(font,player,clock,screen):
+
+    while True:
+        # 60 fps limit
+        clock.tick(60)
+
+        # Clears screen every frame to update dynamic text
+        screen.fill((0, 0, 0))
+
+        # Writes name of game in larger font
+        font_unique = pygame.font.SysFont(None, 200)
+        text = font_unique.render("Bakery clicker", True, (225, 225, 255))
+        text_rect = text.get_rect(center=(1920/2, 150))
+        screen.blit(text, text_rect)
+
+        # Draws menu buttons
+        pygame.draw.rect(screen, (225, 225, 255), (540, 400, 850, 100)) #new game
+        pygame.draw.rect(screen, (225, 225, 255), (540, 550, 850, 100)) #load save
+        pygame.draw.rect(screen, (225, 225, 255), (540, 700, 850, 100)) #quit game
+
+        # Writes text on menu buttons
+        text = font.render("New game", True, (0, 0, 0))
+        text_rect = text.get_rect(center=(1920/2, 450))
+        screen.blit(text, text_rect)
+
+        text = font.render("Load game", True, (0, 0, 0))
+        text_rect = text.get_rect(center=(1920/2, 600))
+        screen.blit(text, text_rect)
+
+        text = font.render("Quit game", True, (0, 0, 0))
+        text_rect = text.get_rect(center=(1920/2, 750))
+        screen.blit(text, text_rect)
+
+        # Check mouse location and gives an x and y co-ordinate
+        mouse_x, mouse_y = get_mouse()
+        
+
+        # Advances main menu based on what button is pressed
+        for event in pygame.event.get():
+            if event.type == MOUSEBUTTONDOWN:
+                return
+
+        pygame.display.flip()
+    
 
 def main():
     # Initialise screen
@@ -79,43 +168,12 @@ def main():
     clock = pygame.time.Clock()
 
     player = Player()
-    # Event loop
-    while True:
-        # locks game to 60fps
-        clock.tick(60)
-
-        # Clears screen every frame to update dynamic text
-        screen.fill((0, 0, 0))
-
-        # Loads screen elements every frame
-        pygame.draw.rect(screen, (0, 0, 255), (150, 1080/4, 500, 500)) 
-
-        # Update coin counter display value
-        text = font.render(str(player.coins), True, (255, 255, 255))
-        text_rect = text.get_rect(center=(400, 25))
-        screen.blit(text, text_rect)
-
-        # Check mouse location and gives an x and y co-ordinate
-        mouse_x, mouse_y = pygame.mouse.get_pos()
-
-        # Checks if mouse is hovering over the bakery shape
-        on_box = False
-        if mouse_x >= 150 and mouse_x <= 650:
-            if mouse_y >= 270 and mouse_y <= 770:
-                on_box = True
-
-        
-        # TO ADD: save data when to a file when this is called
-        for event in pygame.event.get():
-            # Ends game when button close is pressed
-            if event.type == QUIT:
-                return
-            
-            # Checks if mouse clicks on box
-            elif event.type == MOUSEBUTTONDOWN and on_box == True:
-                player.coin_update("Click")               
-            
-        pygame.display.flip()
+    
+    # Opens main menu of game
+    main_menu(font,player,clock,screen)
+    
+    # Start main gameplay loop
+    game_loop(font,player,clock,screen)
 
 
 if __name__ == "__main__":
