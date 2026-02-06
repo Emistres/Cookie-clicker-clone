@@ -3,7 +3,6 @@ import math
 import pygame
 from socket import *
 from pygame.locals import *
-import time
 
 
 class Player:
@@ -62,8 +61,8 @@ def get_mouse():
     
 
 
-def game_loop(font,player,clock,screen):
-
+def game_loop(font_base,player,clock,screen):
+    #Controls loop for gameplay screen and logic
     while True:
         # locks game to 60fps
         clock.tick(60)
@@ -96,6 +95,12 @@ def game_loop(font,player,clock,screen):
             if event.type == QUIT:
                 return
             
+            # Checks if a key was pressed that frame
+            elif event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
+                # Terminates game when escape is pressed (mostly  a debugging thing)
+                if event.mod & pygame.KMOD_escape:
+                    return 
+            
             # Checks if mouse clicks on box
             elif event.type == MOUSEBUTTONDOWN and on_box == True:
                 player.coin_update("Click")               
@@ -103,8 +108,8 @@ def game_loop(font,player,clock,screen):
         pygame.display.flip()
 
 
-def main_menu(font,player,clock,screen):
-
+def main_menu(font_base,player,clock,screen):
+    # Controls the main menu logic for the game and loads as inital screen
     while True:
         # 60 fps limit
         clock.tick(60)
@@ -124,21 +129,20 @@ def main_menu(font,player,clock,screen):
         pygame.draw.rect(screen, (225, 225, 255), (540, 700, 850, 100)) #quit game
 
         # Writes text on menu buttons
-        text = font.render("New game", True, (0, 0, 0))
+        text = font_base.render("New game", True, (0, 0, 0))
         text_rect = text.get_rect(center=(1920/2, 450))
         screen.blit(text, text_rect)
 
-        text = font.render("Load game", True, (0, 0, 0))
+        text = font_base.render("Load game", True, (0, 0, 0))
         text_rect = text.get_rect(center=(1920/2, 600))
         screen.blit(text, text_rect)
 
-        text = font.render("Quit game", True, (0, 0, 0))
+        text = font_base.render("Quit game", True, (0, 0, 0))
         text_rect = text.get_rect(center=(1920/2, 750))
         screen.blit(text, text_rect)
 
         # Check mouse location and gives an x and y co-ordinate
         mouse_x, mouse_y = get_mouse()
-        
 
         # Advances main menu based on what button is pressed
         for event in pygame.event.get():
@@ -153,7 +157,7 @@ def main():
     pygame.init()
     screen = pygame.display.set_mode((1920, 1080))
     pygame.display.set_caption("Bakery Clicker")
-    font = pygame.font.SysFont(None, 50)
+    font_base = pygame.font.SysFont(None, 50)
 
     # Fill background
     background = pygame.Surface(screen.get_size())
@@ -170,10 +174,10 @@ def main():
     player = Player()
     
     # Opens main menu of game
-    main_menu(font,player,clock,screen)
+    main_menu(font_base,player,clock,screen)
     
     # Start main gameplay loop
-    game_loop(font,player,clock,screen)
+    game_loop(font_base,player,clock,screen)
 
 
 if __name__ == "__main__":
