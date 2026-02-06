@@ -8,6 +8,8 @@ import time
 
 class Player:
 
+    #dhirtsdjfnhisfhishhisdtsih
+
     # Will include all data on player
     # Try to setup to interact with save data
 
@@ -117,4 +119,5 @@ def main():
 
 
 if __name__ == "__main__":
+
     main()
