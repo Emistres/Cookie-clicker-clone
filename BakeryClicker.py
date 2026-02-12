@@ -1,5 +1,4 @@
 import sys
-import math
 import pygame
 from socket import *
 from pygame.locals import *
@@ -19,37 +18,67 @@ class Player:
 
     def coin_update(self, update_type):
         
-        # Will contain all math logic for the players coins
-        # Setup to call when an instance of money increase is created
+        # Update type controller
         
         if update_type == "Click":
             self.coins += self.click_value
         
+        elif update_type == "Passive":
+            self.coins += self.passive_income
+        
         return
     
+
     # Function to increment click value
-
-
+    def click_value_growth(self):
+        
+        self.click_value += self.click_value*2
 
 
     # Function to adjust total passive income ammount
-
-
-
-
+    def passive_income_growth(self, external_passive_income):
+        
+        self.passive_income += external_passive_income
+        
+        return
 
 
 class Buildings:
+    # Contains all logic for buildings
+    
+    def __init__ (self, price=10, owned=0, generation=1):
+        
+        self.price = price
+        self.owned = owned
+        self.generation = generation
+        
+    
+    def generation_grow(self, player):
+        
+        player.passive_income_growth(self.generation)
 
-    # Create a parent with easily ajustable values can be used by children
+        return
     
-    
-    
-    
-    # Incremental building cost function that works with all values
 
-    pass
+    def cost_increase(self):
+        
+        self.price += int(self.price/(5/self.owned))
 
+
+    def object_bought(self, player):
+
+        self.owned += 1
+        player.coins -= self.price
+        self.cost_increase()
+    
+
+    def click_increase_check(self,player):
+
+        if self.owned == 10:
+            player.click_value_growth()
+
+        elif self.owned == 100:
+            player.click_value_growth()
 
 
 def get_mouse():
@@ -58,12 +87,47 @@ def get_mouse():
     mouse_x, mouse_y = pygame.mouse.get_pos()
     
     return mouse_x, mouse_y
+
+
+def draw_building_button(screen, location_x, location_y, type, building):
+
+    font = pygame.font.SysFont(None, 30)
+
+    pygame.draw.rect(screen, (255,255,255), (location_x, location_y, 150, 100))
     
+    text = text = font.render(type, True, (0, 0, 0))                    # building name
+    text_rect = text.get_rect(center=(location_x+75, location_y+10))
+    screen.blit(text, text_rect)
+
+    text = text = font.render(str(building.owned), True, (0, 0, 0))     # buildings owned
+    text_rect = text.get_rect(center=(location_x+75, location_y+30))
+    screen.blit(text, text_rect)
+
+    text = text = font.render(str(building.price), True, (0, 0, 0))     # building cost
+    text_rect = text.get_rect(center=(location_x+75, location_y+80))
+    screen.blit(text, text_rect)
+
 
 
 def game_loop(font_base,player,clock,screen):
     #Controls loop for gameplay screen and logic
+    passive_income_clock = 0
+
+    #Loads building objects
+    clicker = Buildings(10, 0, 1)
+    uncle = Buildings(100, 0, 10)
+    farm = Buildings(1000, 0, 100)
+    
+    
+    
     while True:
+
+        passive_income_clock += 1
+
+        if passive_income_clock == 60:
+            passive_income_clock = 0
+            player.coin_update("Passive")
+
         # locks game to 60fps
         clock.tick(60)
 
@@ -73,6 +137,11 @@ def game_loop(font_base,player,clock,screen):
         # Loads bread icon every frame
         pygame.draw.rect(screen, (181, 103, 0), (150, 1080/4, 500, 500)) 
 
+        # Loads shop frames
+        draw_building_button(screen, ((1920/4)*3), 1080/4, "clicker", clicker)
+        draw_building_button(screen, ((1920/4)*3), (1080/4)+101, "uncle", uncle) 
+        draw_building_button(screen, ((1920/4)*3), (1080/4)+202, "farm", farm) 
+
         # Update coin counter display value
         font_unique = pygame.font.SysFont(None, 100)
         text = font_unique.render(str(player.coins), True, (255, 255, 255))
@@ -81,14 +150,32 @@ def game_loop(font_base,player,clock,screen):
 
         # Check mouse location and gives an x and y co-ordinate
         mouse_x, mouse_y = get_mouse()
-
-        # Checks if mouse is hovering over the bakery shape
-        on_box = False
-        if mouse_x >= 150 and mouse_x <= 650:
-            if mouse_y >= 270 and mouse_y <= 770:
-                on_box = True
+        print(mouse_x,mouse_y)
 
         
+        # Checks if mouse is hovering over the bakery shape
+        on_bread = False
+        if mouse_x >= 150 and mouse_x < 650:
+            if mouse_y >= 270 and mouse_y < 770:
+                on_bread = True
+        
+        # Checks if mouse over a shop icon
+        on_clicker = False
+        if mouse_x >= 1440 and mouse_x < 1590:
+            if mouse_y >= 270 and mouse_y < 370:
+                on_clicker = True
+        
+        on_uncle = False
+        if mouse_x >= 1440 and mouse_x < 1590:
+            if mouse_y >= 270+101 and mouse_y < 370+101:
+                on_uncle = True
+        
+        on_farm = False
+        if mouse_x >= 1440 and mouse_x < 1590:
+            if mouse_y >= 270+202 and mouse_y < 370+202:
+                on_farm = True
+        
+
         # TO ADD: save data when to a file when this is called
         for event in pygame.event.get():
             # Ends game when button close is pressed
@@ -97,13 +184,33 @@ def game_loop(font_base,player,clock,screen):
             
             # Checks if a key was pressed that frame
             elif event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
-                # Terminates game when escape is pressed (mostly  a debugging thing)
+                # Terminates game when escape is pressed (mostly a debugging thing)
                 if event.mod & pygame.KMOD_escape:
                     return 
             
-            # Checks if mouse clicks on box
-            elif event.type == MOUSEBUTTONDOWN and on_box == True:
-                player.coin_update("Click")               
+            # Checks if mouse clicks on a box
+            elif event.type == MOUSEBUTTONDOWN:
+                if on_bread == True:
+                    player.coin_update("Click")    
+                
+                elif on_clicker == True:
+                    if player.coins >= clicker.price:
+                        clicker.object_bought(player)
+                        clicker.generation_grow(player)    
+                        clicker.click_increase_check(player)
+
+                elif on_uncle == True:
+                    if player.coins >= uncle.price:
+                        uncle.object_bought(player)
+                        uncle.generation_grow(player)    
+                        uncle.click_increase_check(player)
+                
+                elif on_farm == True:
+                    if player.coins >= farm.price:
+                        farm.object_bought(player)
+                        farm.generation_grow(player)    
+                        farm.click_increase_check(player)
+                    
             
         pygame.display.flip()
 
