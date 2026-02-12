@@ -116,6 +116,7 @@ def game_loop(font_base,player,clock,screen):
     #Loads building objects
     clicker = Buildings(10, 0, 1)
     uncle = Buildings(100, 0, 10)
+    farm = Buildings(1000, 0, 100)
     
     
     
@@ -139,6 +140,7 @@ def game_loop(font_base,player,clock,screen):
         # Loads shop frames
         draw_building_button(screen, ((1920/4)*3), 1080/4, "clicker", clicker)
         draw_building_button(screen, ((1920/4)*3), (1080/4)+101, "uncle", uncle) 
+        draw_building_button(screen, ((1920/4)*3), (1080/4)+202, "farm", farm) 
 
         # Update coin counter display value
         font_unique = pygame.font.SysFont(None, 100)
@@ -157,12 +159,23 @@ def game_loop(font_base,player,clock,screen):
             if mouse_y >= 270 and mouse_y < 770:
                 on_bread = True
         
+        # Checks if mouse over a shop icon
         on_clicker = False
         if mouse_x >= 1440 and mouse_x < 1590:
             if mouse_y >= 270 and mouse_y < 370:
                 on_clicker = True
-
         
+        on_uncle = False
+        if mouse_x >= 1440 and mouse_x < 1590:
+            if mouse_y >= 270+101 and mouse_y < 370+101:
+                on_uncle = True
+        
+        on_farm = False
+        if mouse_x >= 1440 and mouse_x < 1590:
+            if mouse_y >= 270+202 and mouse_y < 370+202:
+                on_farm = True
+        
+
         # TO ADD: save data when to a file when this is called
         for event in pygame.event.get():
             # Ends game when button close is pressed
@@ -176,14 +189,27 @@ def game_loop(font_base,player,clock,screen):
                     return 
             
             # Checks if mouse clicks on a box
-            elif event.type == MOUSEBUTTONDOWN and on_bread == True:
-                player.coin_update("Click")    
+            elif event.type == MOUSEBUTTONDOWN:
+                if on_bread == True:
+                    player.coin_update("Click")    
+                
+                elif on_clicker == True:
+                    if player.coins >= clicker.price:
+                        clicker.object_bought(player)
+                        clicker.generation_grow(player)    
+                        clicker.click_increase_check(player)
 
-            elif event.type == MOUSEBUTTONDOWN and on_clicker == True:   
-                if player.coins >= clicker.price:
-                    clicker.object_bought(player)
-                    clicker.generation_grow(player)    
-                    clicker.click_increase_check(player)    
+                elif on_uncle == True:
+                    if player.coins >= uncle.price:
+                        uncle.object_bought(player)
+                        uncle.generation_grow(player)    
+                        uncle.click_increase_check(player)
+                
+                elif on_farm == True:
+                    if player.coins >= farm.price:
+                        farm.object_bought(player)
+                        farm.generation_grow(player)    
+                        farm.click_increase_check(player)
                     
             
         pygame.display.flip()
