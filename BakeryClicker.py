@@ -44,11 +44,12 @@ class Player:
 class Buildings:
     # Contains all logic for buildings
     
-    def __init__ (self, price=10, owned=0, generation=1):
+    def __init__ (self, price, owned, generation):
         
         self.price = price
         self.owned = owned
         self.generation = generation
+        self.base_price = self.price
         
     
     def generation_grow(self, player):
@@ -58,7 +59,7 @@ class Buildings:
 
     def cost_increase(self):
         
-        self.price += int(self.price/(5/(self.owned*0.25)))
+        self.price = self.base_price * pow(1.15, self.owned)
 
 
     def object_bought(self, player):
@@ -70,11 +71,10 @@ class Buildings:
 
     def click_increase_check(self,player):
 
-        if self.owned == 10:
+        if self.owned % 10 == 0:
             player.click_value_growth()
 
-        elif self.owned == 100:
-            player.click_value_growth()
+    
 
 
 def get_mouse():
@@ -94,17 +94,17 @@ def value_scale_text(coins):
     elif coins >= 1000000 and coins < 1000000000:
         coins = coins/1000000
         coins = round(coins, 2)
-        return str(coins) + " M Coins"
+        return str(coins) + "M Coins"
     
     elif coins >= 1000000000 and coins < 1000000000000:
         coins = coins/1000000000
         coins = round(coins, 2)
-        return str(coins) + " B Coins"
+        return str(coins) + "B Coins"
 
     elif coins >= 1000000000000 and coins < 1000000000000000:
         coins = coins/1000000000000
         coins = round(coins, 2)
-        return str(coins) + " T Coins"
+        return str(coins) + "T Coins"
 
 
 def draw_building_button(screen, location_x, location_y, type, building):
@@ -127,14 +127,16 @@ def draw_building_button(screen, location_x, location_y, type, building):
     screen.blit(text, text_rect)
 
 
-
 def game_loop(player, clock, screen):
     #Controls loop for gameplay screen and logic
 
     #Loads building objects
-    clicker = Buildings(10, 0, 1)
-    uncle = Buildings(100, 0, 10)
-    farm = Buildings(1000, 0, 100)
+    clicker = Buildings(10, 0, 0.1)
+    uncle = Buildings(100, 0, 1)
+    farm = Buildings(1000, 0, 10)
+    house = Buildings(10000, 0, 100)
+    mill = Buildings(100000, 0, 1000)
+    market = Buildings(1000000, 0, 10000)
     
     
     while True:
@@ -148,12 +150,15 @@ def game_loop(player, clock, screen):
         screen.fill((0, 0, 0))
 
         # Loads bread icon every frame
-        pygame.draw.rect(screen, (181, 103, 0), (150, 1080/4, 500, 500)) 
+        pygame.draw.rect(screen, (181, 103, 0), (150, 1080/4, 500, 500), 0) 
 
         # Loads shop frames
         draw_building_button(screen, ((1920/4)*3), 1080/4, "clicker", clicker)
         draw_building_button(screen, ((1920/4)*3), (1080/4)+101, "uncle", uncle) 
         draw_building_button(screen, ((1920/4)*3), (1080/4)+202, "farm", farm) 
+        draw_building_button(screen, ((1920/4)*3), (1080/4)+303, "house", house)
+        draw_building_button(screen, ((1920/4)*3), (1080/4)+404, "mill", mill) 
+        draw_building_button(screen, ((1920/4)*3) + 151, (1080/4), "market", market) 
 
         # Update coin counter display value
         font_unique = pygame.font.SysFont(None, 100)
@@ -186,6 +191,23 @@ def game_loop(player, clock, screen):
         if mouse_x >= 1440 and mouse_x < 1590:
             if mouse_y >= 270+202 and mouse_y < 370+202:
                 on_farm = True
+        
+        on_house = False
+        if mouse_x >= 1440 and mouse_x < 1590:
+            if mouse_y >= 270+303 and mouse_y < 370+303:
+                on_house = True
+        
+        on_mill = False
+        if mouse_x >= 1440 and mouse_x < 1590:
+            if mouse_y >= 270+404 and mouse_y < 370+404:
+                on_mill = True
+        
+        on_market = False
+        if mouse_x >= 1440 + 151 and mouse_x < 1590 + 151:
+            if mouse_y >= 270 and mouse_y < 370:
+                on_market = True
+        
+        
         
 
         # TO ADD: save data when to a file when this is called
@@ -222,6 +244,24 @@ def game_loop(player, clock, screen):
                         farm.object_bought(player)
                         farm.generation_grow(player)    
                         farm.click_increase_check(player)
+
+                elif on_house == True:
+                    if player.coins >= house.price:
+                        house.object_bought(player)
+                        house.generation_grow(player)    
+                        house.click_increase_check(player)
+                    
+                elif on_mill == True:
+                    if player.coins >= mill.price:
+                        mill.object_bought(player)
+                        mill.generation_grow(player)    
+                        mill.click_increase_check(player)
+                    
+                elif on_market == True:
+                    if player.coins >= market.price:
+                        market.object_bought(player)
+                        market.generation_grow(player)    
+                        market.click_increase_check(player)
                     
         pygame.display.flip()
 
