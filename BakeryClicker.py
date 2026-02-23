@@ -127,6 +127,24 @@ def draw_building_button(screen, location_x, location_y, type, building):
     screen.blit(text, text_rect)
 
 
+def rebirth_loop(player, clock, screen):
+
+    while True:
+
+        clock.tick(60)
+
+        screen.fill((0,0,0))
+        pygame.display.flip()
+        
+        for event in pygame.event.get():
+            
+            if event.type == QUIT:
+                sys.exit()
+    
+    pass
+
+
+
 def game_loop(player, clock, screen):
     #Controls loop for gameplay screen and logic
 
@@ -152,6 +170,9 @@ def game_loop(player, clock, screen):
         # Loads bread icon every frame
         pygame.draw.rect(screen, (181, 103, 0), (150, 1080/4, 500, 500), 0) 
 
+        # Load rebirth button
+        pygame.draw.rect(screen, (255, 255, 255), (1520, 70, 150, 100), 0)
+
         # Loads shop frames
         draw_building_button(screen, ((1920/4)*3), 1080/4, "clicker", clicker)
         draw_building_button(screen, ((1920/4)*3), (1080/4)+101, "uncle", uncle) 
@@ -170,7 +191,13 @@ def game_loop(player, clock, screen):
         # Check mouse location and gives an x and y co-ordinate
         mouse_x, mouse_y = get_mouse()
         
-        # Checks if mouse is hovering over the bakery shape
+        # Checks is mouse is on rebirth button
+        on_rebirth = False
+        if mouse_x >= 1520 and mouse_x < 1670:
+            if mouse_y >= 70 and mouse_y < 170:
+                on_rebirth = True
+
+        # Checks if mouse is hovering over the bakery shop
         on_bread = False
         if mouse_x >= 150 and mouse_x < 650:
             if mouse_y >= 270 and mouse_y < 770:
@@ -225,7 +252,10 @@ def game_loop(player, clock, screen):
             # Checks if mouse clicks on a box
             elif event.type == MOUSEBUTTONDOWN:
                 if on_bread == True:
-                    player.coin_update("Click")    
+                    player.coin_update("Click") 
+
+                elif on_rebirth == True:
+                    rebirth_loop(player, clock, screen)   
                 
                 elif on_clicker == True:
                     if player.coins >= clicker.price:
