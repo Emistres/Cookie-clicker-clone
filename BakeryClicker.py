@@ -2,6 +2,8 @@ import sys
 import pygame
 from socket import *
 from pygame.locals import *
+import math
+
 
 
 class Player:
@@ -19,7 +21,9 @@ class Player:
     def coin_update(self, update_type):
         
         # Update type controller
-        
+        if self.coins >= 1e+63:
+            self.coins = float(math.inf)
+            
         if update_type == "Click":
             self.coins += self.click_value
         
@@ -39,6 +43,7 @@ class Player:
     def passive_income_growth(self, external_passive_income):
         
         self.passive_income += external_passive_income
+        
 
 
 class Buildings:
@@ -59,14 +64,25 @@ class Buildings:
 
     def cost_increase(self):
         
-        self.price = self.base_price * pow(1.15, self.owned)
+        if self.price == math.inf:
+            pass
+        
+        else:
+            self.price = self.base_price * pow(1.15, self.owned)
+        
 
 
     def object_bought(self, player):
-
+        
         self.owned += 1
-        player.coins -= self.price
-        self.cost_increase()
+        if self.price == math.inf:
+            pass
+        else:
+            player.coins -= self.price
+            self.cost_increase()
+
+            if self.price >= 1e+63:
+                self.price = math.inf
     
 
     def click_increase_check(self,player):
@@ -86,25 +102,28 @@ def get_mouse():
 
 
 def value_scale_text(coins):
+    """
+    solution taken from:
+    https://stackoverflow.com/questions/3154460/python-human-readable-large-numbers/3155023#3155023
+    """
 
-    coins = int(coins)
-    if coins < 1000000:
-        return str(coins) + " Coins"
-   
-    elif coins >= 1000000 and coins < 1000000000:
-        coins = coins/1000000
-        coins = round(coins, 2)
-        return str(coins) + "M Coins"
+    cash_suffix = ['',' K',' M',' B',' T','Qd','Qn',
+                   'Sx','Sp','O','N','de','Ud','DD',
+                   'tdD','qdD','QnD','sxD','SpD','OcD',
+                   'NvD']
     
-    elif coins >= 1000000000 and coins < 1000000000000:
-        coins = coins/1000000000
-        coins = round(coins, 2)
-        return str(coins) + "B Coins"
+    infinity = math.isinf(coins)
 
-    elif coins >= 1000000000000 and coins < 1000000000000000:
-        coins = coins/1000000000000
-        coins = round(coins, 2)
-        return str(coins) + "T Coins"
+    if infinity == True:
+        return 'inf'
+
+    else:
+        n = float(coins)
+        millidx = max(0,min(len(cash_suffix)-1,
+                            int(math.floor(0 if n == 0 else math.log10(abs(n))/3))))
+    
+        return '{:.0f}{}'.format(n / 10**(3 * millidx), cash_suffix[millidx])
+
 
 
 def draw_building_button(screen, location_x, location_y, type, building):
@@ -154,7 +173,7 @@ def game_loop(player, clock, screen):
     farm = Buildings(1000, 0, 10)
     house = Buildings(10000, 0, 100)
     mill = Buildings(100000, 0, 1000)
-    market = Buildings(1000000, 0, 10000)
+    market = Buildings(100000, 0, 10000)  #100000
     
     
     while True:
@@ -388,7 +407,7 @@ def main():
     # Initialise clock
     clock = pygame.time.Clock()
 
-    player = Player()
+    player = Player(1e+63)
     
     # Opens main menu of game
     main_menu(font_base,player,clock,screen)
@@ -400,3 +419,4 @@ def main():
 if __name__ == "__main__":
 
     main()
+
