@@ -15,7 +15,7 @@ class Player:
         
         self.coins = float(coins)
         self.click_value = click_value
-        self.passive_income = passive_income
+        self.passive_income = float(passive_income)
 
 
     def coin_update(self, update_type):
@@ -101,11 +101,12 @@ def get_mouse():
     return mouse_x, mouse_y
 
 
-def value_scale_text(coins):
+def value_scale_text(coins, passive_income):
     """
     solution taken from:
     https://stackoverflow.com/questions/3154460/python-human-readable-large-numbers/3155023#3155023
     """
+    n = float(coins)
 
     cash_suffix = ['',' K',' M',' B',' T','Qd','Qn',
                    'Sx','Sp','O','N','de','Ud','DD',
@@ -117,8 +118,9 @@ def value_scale_text(coins):
     if infinity == True:
         return 'inf'
 
+    elif coins < 1000 and passive_income == True:
+        return f'{n:.1f}'
     else:
-        n = float(coins)
         millidx = max(0,min(len(cash_suffix)-1,
                             int(math.floor(0 if n == 0 else math.log10(abs(n))/3))))
     
@@ -140,7 +142,7 @@ def draw_building_button(screen, location_x, location_y, type, building):
     text_rect = text.get_rect(center=(location_x+75, location_y+30))
     screen.blit(text, text_rect)
 
-    price = value_scale_text(building.price)
+    price = value_scale_text(building.price, False)
     text = text = font.render(price, True, (0, 0, 0))                   # building cost
     text_rect = text.get_rect(center=(location_x+75, location_y+80))
     screen.blit(text, text_rect)
@@ -173,7 +175,7 @@ def game_loop(player, clock, screen):
     farm = Buildings(1000, 0, 10)
     house = Buildings(10000, 0, 100)
     mill = Buildings(100000, 0, 1000)
-    market = Buildings(100000, 0, 10000)  #100000
+    market = Buildings(1000000, 0, 10000)  #100000
     
     
     while True:
@@ -200,11 +202,17 @@ def game_loop(player, clock, screen):
         draw_building_button(screen, ((1920/4)*3), (1080/4)+404, "mill", mill) 
         draw_building_button(screen, ((1920/4)*3) + 151, (1080/4), "market", market) 
 
-        # Update coin counter display value
+        # Update coin counter display value and coins per second
         font_unique = pygame.font.SysFont(None, 100)
-        coin_output = value_scale_text(player.coins)
+        coin_output = value_scale_text(player.coins, False)
         text = font_unique.render(coin_output, True, (255, 255, 255))
         text_rect = text.get_rect(center=(400, 125))
+        screen.blit(text, text_rect)
+
+        font_small = pygame.font.SysFont(None, 35)
+        passive_income = value_scale_text(player.passive_income, True)
+        text = font_small.render(passive_income+" per second", True, (255, 255, 255))
+        text_rect = text.get_rect(center=(400, 225))
         screen.blit(text, text_rect)
 
         # Check mouse location and gives an x and y co-ordinate
@@ -261,12 +269,6 @@ def game_loop(player, clock, screen):
             # Ends game when button close is pressed
             if event.type == QUIT:
                 return
-            
-            # Checks if a key was pressed that frame
-            elif event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
-                # Terminates game when escape is pressed (mostly a debugging thing)
-                if event.mod & pygame.KMOD_escape:
-                    return 
             
             # Checks if mouse clicks on a box
             elif event.type == MOUSEBUTTONDOWN:
@@ -407,7 +409,7 @@ def main():
     # Initialise clock
     clock = pygame.time.Clock()
 
-    player = Player(1e+63)
+    player = Player()
     
     # Opens main menu of game
     main_menu(font_base,player,clock,screen)
