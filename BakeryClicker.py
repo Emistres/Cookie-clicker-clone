@@ -5,6 +5,7 @@ from pygame.locals import *
 import math
 
 
+global active_screen 
 
 class Player:
 
@@ -148,7 +149,23 @@ def draw_building_button(screen, location_x, location_y, type, building):
     screen.blit(text, text_rect)
 
 
-def rebirth_loop(player, clock, screen):
+def draw_money(player,screen):
+
+    # Update coin counter display value and coins per second
+    font_unique = pygame.font.SysFont(None, 100)
+    coin_output = value_scale_text(player.coins, False)
+    text = font_unique.render(coin_output, True, (255, 255, 255))
+    text_rect = text.get_rect(center=((1920/2), 125))
+    screen.blit(text, text_rect)
+
+    font_small = pygame.font.SysFont(None, 35)
+    passive_income = value_scale_text(player.passive_income, True)
+    text = font_small.render(passive_income+" per second", True, (255, 255, 255))
+    text_rect = text.get_rect(center=((1920/2), 225))
+    screen.blit(text, text_rect)
+
+
+def rebirth_screen(player, clock, screen):
 
     while True:
 
@@ -162,12 +179,104 @@ def rebirth_loop(player, clock, screen):
             if event.type == QUIT:
                 sys.exit()
     
-    pass
+
+def bread_screen(player,clock,screen):
+    
+    global active_screen
+
+    while True:
+
+        clock.tick(60)
+
+        if active_screen != "bread":
+            return
+
+        screen.fill((0,0,0))
+
+        # Loads bread icon every frame
+        pygame.draw.rect(screen, (181, 103, 0), ((1920/2)-250, 1080/4, 500, 500), 0) 
+
+        draw_money(player,screen)
+        
+        mouse_x, mouse_y = get_mouse()
+
+        for event in pygame.event.get():
+            
+            if event.type == QUIT:
+                sys.exit()
+            
+            elif event.type == MOUSEBUTTONDOWN:
+                
+                if ((1920/2)-250) <= mouse_x < ((1920/2)+250):
+                    if ((1080/4)) <= mouse_y < ((1080/4)+500):
+                        player.coin_update("Click")
+
+        bottom_bar(screen)
+
+        pygame.display.flip()
 
 
+def upgrade_screen(player,clock,screen):
+    
+    while True:
+
+        clock.tick(60)
+
+        screen.fill((0,0,0))
+        pygame.display.flip()
+        
+        for event in pygame.event.get():
+            
+            if event.type == QUIT:
+                sys.exit()
+
+
+def bottom_bar(screen):
+
+    global active_screen
+    
+    pygame.draw.rect(screen, (255, 255, 255), (0, 980, 1920/4, 100), 0) 
+    pygame.draw.rect(screen, (255, 255, 255), ((1920/4)+1, 980, 1920/4, 100), 0) 
+    pygame.draw.rect(screen, (255, 255, 255), ((1920/2)+2, 980, 1920/4, 100), 0) 
+    pygame.draw.rect(screen, (255, 255, 255), (1920/1.33, 980, 1920/4, 100), 0) 
+
+    font_unique = pygame.font.SysFont(None, 100)
+    text = font_unique.render("Town", True, (0, 0, 0))
+    text_rect = text.get_rect(center=((1920/8), 1080-50))
+    screen.blit(text, text_rect)
+
+    font_unique = pygame.font.SysFont(None, 100)
+    text = font_unique.render("Upgrades", True, (0, 0, 0))
+    text_rect = text.get_rect(center=((1920/8)+((1920/4)+1), 1080-50))
+    screen.blit(text, text_rect)
+
+    font_unique = pygame.font.SysFont(None, 100)
+    text = font_unique.render("Incarnation", True, (0, 0, 0))
+    text_rect = text.get_rect(center=((1920/2.6)+((1920/4)+2), 1080-50))
+    screen.blit(text, text_rect)
+
+    font_unique = pygame.font.SysFont(None, 100)
+    text = font_unique.render("Menu", True, (0, 0, 0))
+    text_rect = text.get_rect(center=((1920/1.6)+((1920/4)), 1080-50))
+    screen.blit(text, text_rect)
+
+    mouse_x, mouse_y = get_mouse()
+    for event in pygame.event.get():
+            
+            if event.type == QUIT:
+                sys.exit()
+            
+            elif event.type == MOUSEBUTTONDOWN:
+                
+                if (0) <= mouse_x < (980):
+                    if (1080-100) <= mouse_y < (1080):
+                        active_screen = "bread"
+    return 
 
 def game_loop(player, clock, screen):
     #Controls loop for gameplay screen and logic
+    
+    global active_screen
 
     #Loads building objects
     clicker = Buildings(10, 0, 0.1)
@@ -175,9 +284,12 @@ def game_loop(player, clock, screen):
     farm = Buildings(1000, 0, 10)
     house = Buildings(10000, 0, 100)
     mill = Buildings(100000, 0, 1000)
-    market = Buildings(1000000, 0, 10000)  #100000
+    market = Buildings(1000000, 0, 10000)  
+    tower = Buildings(10000000, 0, 100000)
+    castle = Buildings(100000000, 0, 1000000)
+    church = Buildings(1000000000, 0, 10000000)
     
-    
+    active_screen = "bread"
     while True:
 
         player.coin_update("Passive")
@@ -189,31 +301,27 @@ def game_loop(player, clock, screen):
         screen.fill((0, 0, 0))
 
         # Loads bread icon every frame
-        pygame.draw.rect(screen, (181, 103, 0), (150, 1080/4, 500, 500), 0) 
+        if active_screen == "bread":   
+            bread_screen(player, clock, screen)
 
         # Load rebirth button
         pygame.draw.rect(screen, (255, 255, 255), (1520, 70, 150, 100), 0)
 
         # Loads shop frames
-        draw_building_button(screen, ((1920/4)*3), 1080/4, "clicker", clicker)
-        draw_building_button(screen, ((1920/4)*3), (1080/4)+101, "uncle", uncle) 
-        draw_building_button(screen, ((1920/4)*3), (1080/4)+202, "farm", farm) 
-        draw_building_button(screen, ((1920/4)*3), (1080/4)+303, "house", house)
-        draw_building_button(screen, ((1920/4)*3), (1080/4)+404, "mill", mill) 
-        draw_building_button(screen, ((1920/4)*3) + 151, (1080/4), "market", market) 
+        draw_building_button(screen, ((1920/4)*3), 1080/4, "Clicker", clicker)
+        draw_building_button(screen, ((1920/4)*3), (1080/4)+101, "Uncle", uncle) 
+        draw_building_button(screen, ((1920/4)*3), (1080/4)+202, "Farm", farm) 
+        draw_building_button(screen, ((1920/4)*3), (1080/4)+303, "House", house)
+        draw_building_button(screen, ((1920/4)*3), (1080/4)+404, "Mill", mill) 
+        draw_building_button(screen, ((1920/4)*3) + 151, (1080/4), "Market", market) 
+        draw_building_button(screen, ((1920/4)*3) + 151, (1080/4)+101, "Wizzard Tower", tower) 
+        draw_building_button(screen, ((1920/4)*3) + 151, (1080/4)+202, "Castle", castle)
+        draw_building_button(screen, ((1920/4)*3) + 151, (1080/4)+303, "Church", church)
+        
 
         # Update coin counter display value and coins per second
-        font_unique = pygame.font.SysFont(None, 100)
-        coin_output = value_scale_text(player.coins, False)
-        text = font_unique.render(coin_output, True, (255, 255, 255))
-        text_rect = text.get_rect(center=(400, 125))
-        screen.blit(text, text_rect)
-
-        font_small = pygame.font.SysFont(None, 35)
-        passive_income = value_scale_text(player.passive_income, True)
-        text = font_small.render(passive_income+" per second", True, (255, 255, 255))
-        text_rect = text.get_rect(center=(400, 225))
-        screen.blit(text, text_rect)
+        
+        draw_money(player, screen)
 
         # Check mouse location and gives an x and y co-ordinate
         mouse_x, mouse_y = get_mouse()
@@ -261,6 +369,21 @@ def game_loop(player, clock, screen):
             if mouse_y >= 270 and mouse_y < 370:
                 on_market = True
         
+        on_tower = False
+        if mouse_x >= 1440 + 151 and mouse_x < 1590 + 151:
+            if mouse_y >= 270 and mouse_y < 370+101:
+                on_tower = True
+
+        on_castle = False
+        if mouse_x >= 1440 + 151 and mouse_x < 1590 + 151:
+            if mouse_y >= 270 and mouse_y < 370+202:
+                on_castle = True
+
+        on_church = False
+        if mouse_x >= 1440 + 151 and mouse_x < 1590 + 151:
+            if mouse_y >= 270 and mouse_y < 370+303:
+                on_church = True
+        
         
         
 
@@ -276,7 +399,7 @@ def game_loop(player, clock, screen):
                     player.coin_update("Click") 
 
                 elif on_rebirth == True:
-                    rebirth_loop(player, clock, screen)   
+                    rebirth_screen(player, clock, screen)   
                 
                 elif on_clicker == True:
                     if player.coins >= clicker.price:
@@ -313,6 +436,24 @@ def game_loop(player, clock, screen):
                         market.object_bought(player)
                         market.generation_grow(player)    
                         market.click_increase_check(player)
+                
+                elif on_tower == True:
+                    if player.coins >= tower.price:
+                        tower.object_bought(player)
+                        tower.generation_grow(player)    
+                        tower.click_increase_check(player)
+                
+                elif on_castle == True:
+                    if player.coins >= castle.price:
+                        castle.object_bought(player)
+                        castle.generation_grow(player)    
+                        castle.click_increase_check(player)
+                
+                elif on_church == True:
+                    if player.coins >= church.price:
+                        church.object_bought(player)
+                        church.generation_grow(player)    
+                        church.click_increase_check(player)
                     
         pygame.display.flip()
 
@@ -421,4 +562,3 @@ def main():
 if __name__ == "__main__":
 
     main()
-
