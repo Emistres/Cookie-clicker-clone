@@ -6,6 +6,7 @@ import math
 
 
 global active_screen 
+global clicker, uncle, farm, house, mill, market, tower, castle, church
 
 class Player:
 
@@ -121,6 +122,7 @@ def value_scale_text(coins, passive_income):
 
     elif coins < 1000 and passive_income == True:
         return f'{n:.1f}'
+    
     else:
         millidx = max(0,min(len(cash_suffix)-1,
                             int(math.floor(0 if n == 0 else math.log10(abs(n))/3))))
@@ -168,6 +170,7 @@ def draw_money(player,screen):
 def incarn_screen(player, clock, screen):
 
     global active_screen
+    global clicker, uncle, farm, house, mill, market, tower, castle, church
 
     while True:
 
@@ -176,8 +179,10 @@ def incarn_screen(player, clock, screen):
 
         clock.tick(60)
 
+        player.coin_update("Passive")
+        
         screen.fill((0,0,0))
-        pygame.display.flip()
+        
 
         mouse_x, mouse_y = get_mouse()
         
@@ -191,15 +196,20 @@ def incarn_screen(player, clock, screen):
                 bottom_bar_click_check(mouse_x, mouse_y)
     
         bottom_bar(screen)
+        
+        pygame.display.flip()
 
 
 def bread_screen(player,clock,screen):
     
     global active_screen
+    global clicker, uncle, farm, house, mill, market, tower, castle, church
 
     while True:
 
         clock.tick(60)
+
+        player.coin_update("Passive")
 
         if active_screen != "bread":
             return
@@ -220,7 +230,8 @@ def bread_screen(player,clock,screen):
             
             elif event.type == MOUSEBUTTONDOWN:
                 
-                bottom_bar_click_check(mouse_x, mouse_y)
+                if mouse_y <= 1080+100:
+                    bottom_bar_click_check(mouse_x, mouse_y)
 
                 if ((1920/2)-250) <= mouse_x < ((1920/2)+250):
                     if ((1080/4)) <= mouse_y < ((1080/4)+500):
@@ -234,8 +245,11 @@ def bread_screen(player,clock,screen):
 def upgrade_screen(player,clock,screen):
     
     global active_screen
+    global clicker, uncle, farm, house, mill, market, tower, castle, church
 
     while True:
+
+        player.coin_update("Passive")
 
         if active_screen != "upgrades":
             return
@@ -243,9 +257,65 @@ def upgrade_screen(player,clock,screen):
         clock.tick(60)
 
         screen.fill((0,0,0))
+        draw_money(player,screen)
+
+        draw_building_button(screen, ((1920/4)*3), 1080/4, "Clicker", clicker)
+        draw_building_button(screen, ((1920/4)*3), (1080/4)+101, "Uncle", uncle) 
+        draw_building_button(screen, ((1920/4)*3), (1080/4)+202, "Farm", farm) 
+        draw_building_button(screen, ((1920/4)*3), (1080/4)+303, "House", house)
+        draw_building_button(screen, ((1920/4)*3), (1080/4)+404, "Mill", mill) 
+        draw_building_button(screen, ((1920/4)*3) + 151, (1080/4), "Market", market) 
+        draw_building_button(screen, ((1920/4)*3) + 151, (1080/4)+101, "Wizzard Tower", tower) 
+        draw_building_button(screen, ((1920/4)*3) + 151, (1080/4)+202, "Castle", castle)
+        draw_building_button(screen, ((1920/4)*3) + 151, (1080/4)+303, "Church", church)
 
         mouse_x, mouse_y = get_mouse()
+
+        on_clicker = False
+        if mouse_x >= 1440 and mouse_x < 1590:
+            if mouse_y >= 270 and mouse_y < 370:
+                on_clicker = True
         
+        on_uncle = False
+        if mouse_x >= 1440 and mouse_x < 1590:
+            if mouse_y >= 270+101 and mouse_y < 370+101:
+                on_uncle = True
+        
+        on_farm = False
+        if mouse_x >= 1440 and mouse_x < 1590:
+            if mouse_y >= 270+202 and mouse_y < 370+202:
+                on_farm = True
+        
+        on_house = False
+        if mouse_x >= 1440 and mouse_x < 1590:
+            if mouse_y >= 270+303 and mouse_y < 370+303:
+                on_house = True
+        
+        on_mill = False
+        if mouse_x >= 1440 and mouse_x < 1590:
+            if mouse_y >= 270+404 and mouse_y < 370+404:
+                on_mill = True
+        
+        on_market = False
+        if mouse_x >= 1440 + 151 and mouse_x < 1590 + 151:
+            if mouse_y >= 270 and mouse_y < 370:
+                on_market = True
+        
+        on_tower = False
+        if mouse_x >= 1440 + 151 and mouse_x < 1590 + 151:
+            if mouse_y >= 270 and mouse_y < 370+101:
+                on_tower = True
+
+        on_castle = False
+        if mouse_x >= 1440 + 151 and mouse_x < 1590 + 151:
+            if mouse_y >= 270 and mouse_y < 370+202:
+                on_castle = True
+
+        on_church = False
+        if mouse_x >= 1440 + 151 and mouse_x < 1590 + 151:
+            if mouse_y >= 270 and mouse_y < 370+303:
+                on_church = True
+
         for event in pygame.event.get():
             
             if event.type == QUIT:
@@ -253,8 +323,63 @@ def upgrade_screen(player,clock,screen):
             
             elif event.type == MOUSEBUTTONDOWN:
                 
-                bottom_bar_click_check(mouse_x, mouse_y)
-        
+                if mouse_y <= 1080+100:
+                    bottom_bar_click_check(mouse_x, mouse_y) 
+                
+                if on_clicker == True:
+                    if player.coins >= clicker.price:
+                        clicker.object_bought(player)
+                        clicker.generation_grow(player)    
+                        clicker.click_increase_check(player)
+
+                elif on_uncle == True:
+                    if player.coins >= uncle.price:
+                        uncle.object_bought(player)
+                        uncle.generation_grow(player)    
+                        uncle.click_increase_check(player)
+                
+                elif on_farm == True:
+                    if player.coins >= farm.price:
+                        farm.object_bought(player)
+                        farm.generation_grow(player)    
+                        farm.click_increase_check(player)
+
+                elif on_house == True:
+                    if player.coins >= house.price:
+                        house.object_bought(player)
+                        house.generation_grow(player)    
+                        house.click_increase_check(player)
+                    
+                elif on_mill == True:
+                    if player.coins >= mill.price:
+                        mill.object_bought(player)
+                        mill.generation_grow(player)    
+                        mill.click_increase_check(player)
+                    
+                elif on_market == True:
+                    if player.coins >= market.price:
+                        market.object_bought(player)
+                        market.generation_grow(player)    
+                        market.click_increase_check(player)
+                
+                elif on_tower == True:
+                    if player.coins >= tower.price:
+                        tower.object_bought(player)
+                        tower.generation_grow(player)    
+                        tower.click_increase_check(player)
+                
+                elif on_castle == True:
+                    if player.coins >= castle.price:
+                        castle.object_bought(player)
+                        castle.generation_grow(player)    
+                        castle.click_increase_check(player)
+                
+                elif on_church == True:
+                    if player.coins >= church.price:
+                        church.object_bought(player)
+                        church.generation_grow(player)    
+                        church.click_increase_check(player)
+
         bottom_bar(screen)
 
         pygame.display.flip()
@@ -264,8 +389,6 @@ def upgrade_screen(player,clock,screen):
 
 
 def bottom_bar(screen):
-
-    global active_screen
     
     pygame.draw.rect(screen, (255, 255, 255), (0, 980, 1920/4, 100), 0) 
     pygame.draw.rect(screen, (255, 255, 255), ((1920/4)+1, 980, 1920/4, 100), 0) 
@@ -291,11 +414,6 @@ def bottom_bar(screen):
     text = font_unique.render("Menu", True, (0, 0, 0))
     text_rect = text.get_rect(center=((1920/1.6)+((1920/4)), 1080-50))
     screen.blit(text, text_rect)
-    
-    for event in pygame.event.get():
-            
-            if event.type == QUIT:
-                sys.exit()
             
     return 
 
@@ -326,6 +444,8 @@ def game_loop(player, clock, screen):
     
     global active_screen
 
+    global clicker, uncle, farm, house, mill, market, tower, castle, church
+    
     #Loads building objects
     clicker = Buildings(10, 0, 0.1)
     uncle = Buildings(100, 0, 1)
@@ -338,6 +458,7 @@ def game_loop(player, clock, screen):
     church = Buildings(1000000000, 0, 10000000)
     
     active_screen = "bread"
+    
     while True:
 
         player.coin_update("Passive")
@@ -365,15 +486,7 @@ def game_loop(player, clock, screen):
         pygame.draw.rect(screen, (255, 255, 255), (1520, 70, 150, 100), 0)
 
         # Loads shop frames
-        draw_building_button(screen, ((1920/4)*3), 1080/4, "Clicker", clicker)
-        draw_building_button(screen, ((1920/4)*3), (1080/4)+101, "Uncle", uncle) 
-        draw_building_button(screen, ((1920/4)*3), (1080/4)+202, "Farm", farm) 
-        draw_building_button(screen, ((1920/4)*3), (1080/4)+303, "House", house)
-        draw_building_button(screen, ((1920/4)*3), (1080/4)+404, "Mill", mill) 
-        draw_building_button(screen, ((1920/4)*3) + 151, (1080/4), "Market", market) 
-        draw_building_button(screen, ((1920/4)*3) + 151, (1080/4)+101, "Wizzard Tower", tower) 
-        draw_building_button(screen, ((1920/4)*3) + 151, (1080/4)+202, "Castle", castle)
-        draw_building_button(screen, ((1920/4)*3) + 151, (1080/4)+303, "Church", church)
+        
         
 
         # Update coin counter display value and coins per second
