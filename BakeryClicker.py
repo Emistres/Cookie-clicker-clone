@@ -165,20 +165,33 @@ def draw_money(player,screen):
     screen.blit(text, text_rect)
 
 
-def rebirth_screen(player, clock, screen):
+def incarn_screen(player, clock, screen):
+
+    global active_screen
 
     while True:
+
+        if active_screen != "incarnation":
+            return
 
         clock.tick(60)
 
         screen.fill((0,0,0))
         pygame.display.flip()
+
+        mouse_x, mouse_y = get_mouse()
         
         for event in pygame.event.get():
             
             if event.type == QUIT:
                 sys.exit()
+            
+            elif event.type == MOUSEBUTTONDOWN:
+                
+                bottom_bar_click_check(mouse_x, mouse_y)
     
+        bottom_bar(screen)
+
 
 def bread_screen(player,clock,screen):
     
@@ -207,6 +220,8 @@ def bread_screen(player,clock,screen):
             
             elif event.type == MOUSEBUTTONDOWN:
                 
+                bottom_bar_click_check(mouse_x, mouse_y)
+
                 if ((1920/2)-250) <= mouse_x < ((1920/2)+250):
                     if ((1080/4)) <= mouse_y < ((1080/4)+500):
                         player.coin_update("Click")
@@ -218,17 +233,34 @@ def bread_screen(player,clock,screen):
 
 def upgrade_screen(player,clock,screen):
     
+    global active_screen
+
     while True:
+
+        if active_screen != "upgrades":
+            return
 
         clock.tick(60)
 
         screen.fill((0,0,0))
-        pygame.display.flip()
+
+        mouse_x, mouse_y = get_mouse()
         
         for event in pygame.event.get():
             
             if event.type == QUIT:
                 sys.exit()
+            
+            elif event.type == MOUSEBUTTONDOWN:
+                
+                bottom_bar_click_check(mouse_x, mouse_y)
+        
+        bottom_bar(screen)
+
+        pygame.display.flip()
+    
+    return
+        
 
 
 def bottom_bar(screen):
@@ -259,19 +291,35 @@ def bottom_bar(screen):
     text = font_unique.render("Menu", True, (0, 0, 0))
     text_rect = text.get_rect(center=((1920/1.6)+((1920/4)), 1080-50))
     screen.blit(text, text_rect)
-
-    mouse_x, mouse_y = get_mouse()
+    
     for event in pygame.event.get():
             
             if event.type == QUIT:
                 sys.exit()
             
-            elif event.type == MOUSEBUTTONDOWN:
-                
-                if (0) <= mouse_x < (980):
-                    if (1080-100) <= mouse_y < (1080):
-                        active_screen = "bread"
     return 
+
+
+def bottom_bar_click_check(mouse_x, mouse_y):
+    
+    global active_screen
+
+    if (0) <= mouse_x < (480):
+        if (1080-100) <= mouse_y < (1080):
+                active_screen = "bread"
+
+    elif (481) <= mouse_x < (481+480):
+        if (1080-100) <= mouse_y < (1080):
+            active_screen = "upgrades"      
+    
+    elif (481*2) <= mouse_x < ((481*2)+480):
+        if (1080-100) <= mouse_y < (1080):
+            active_screen = "incarnation"       
+    
+    elif (481*3) <= mouse_x < ((481*3)+480):
+        if (1080-100) <= mouse_y < (1080):
+            active_screen = "menu"      
+
 
 def game_loop(player, clock, screen):
     #Controls loop for gameplay screen and logic
@@ -300,9 +348,18 @@ def game_loop(player, clock, screen):
         # Clears screen every frame to update dynamic text
         screen.fill((0, 0, 0))
 
-        # Loads bread icon every frame
+        # Loads the 4 unique screns
         if active_screen == "bread":   
             bread_screen(player, clock, screen)
+
+        elif active_screen == "upgrades":
+            upgrade_screen(player, clock, screen)
+
+        elif active_screen == "incarnation":
+            incarn_screen(player, clock, screen)
+
+        elif active_screen == "menu":
+            main_menu(player, clock, screen)
 
         # Load rebirth button
         pygame.draw.rect(screen, (255, 255, 255), (1520, 70, 150, 100), 0)
@@ -399,7 +456,7 @@ def game_loop(player, clock, screen):
                     player.coin_update("Click") 
 
                 elif on_rebirth == True:
-                    rebirth_screen(player, clock, screen)   
+                    incarn_screen(player, clock, screen)   
                 
                 elif on_clicker == True:
                     if player.coins >= clicker.price:
@@ -458,12 +515,16 @@ def game_loop(player, clock, screen):
         pygame.display.flip()
 
 
-def main_menu(font_base,player,clock,screen):
+def main_menu(player,clock,screen):
     # Controls the main menu logic for the game and loads as inital screen
+    global active_screen
+    
+    font_base = pygame.font.SysFont(None, 50)
+    
     while True:
         # 60 fps limit
         clock.tick(60)
-
+        
         # Clears screen every frame to update dynamic text
         screen.fill((0, 0, 0))
 
@@ -517,10 +578,11 @@ def main_menu(font_base,player,clock,screen):
             
             if event.type == MOUSEBUTTONDOWN:
                 if on_new_game == True:
+                    active_screen = "bread"
                     return
                 
                 elif on_load_game == True:
-                    print ("load")
+                    active_screen = "save_screen"
                     return
                 
                 elif on_close_game == True:
@@ -553,7 +615,7 @@ def main():
     player = Player()
     
     # Opens main menu of game
-    main_menu(font_base,player,clock,screen)
+    main_menu(player,clock,screen)
     
     # Start main gameplay loop
     game_loop(player,clock,screen)
@@ -562,3 +624,4 @@ def main():
 if __name__ == "__main__":
 
     main()
+
