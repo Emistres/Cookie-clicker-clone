@@ -383,9 +383,6 @@ def upgrade_screen(player,clock,screen):
         bottom_bar(screen)
 
         pygame.display.flip()
-    
-    return
-        
 
 
 def bottom_bar(screen):
@@ -482,148 +479,12 @@ def game_loop(player, clock, screen):
         elif active_screen == "menu":
             main_menu(player, clock, screen)
 
-        # Load rebirth button
-        pygame.draw.rect(screen, (255, 255, 255), (1520, 70, 150, 100), 0)
-
-        # Loads shop frames
-        
-        
-
-        # Update coin counter display value and coins per second
-        
-        draw_money(player, screen)
-
-        # Check mouse location and gives an x and y co-ordinate
-        mouse_x, mouse_y = get_mouse()
-        
-        # Checks is mouse is on rebirth button
-        on_rebirth = False
-        if mouse_x >= 1520 and mouse_x < 1670:
-            if mouse_y >= 70 and mouse_y < 170:
-                on_rebirth = True
-
-        # Checks if mouse is hovering over the bakery shop
-        on_bread = False
-        if mouse_x >= 150 and mouse_x < 650:
-            if mouse_y >= 270 and mouse_y < 770:
-                on_bread = True
-        
-        # Checks if mouse over a shop icon
-        on_clicker = False
-        if mouse_x >= 1440 and mouse_x < 1590:
-            if mouse_y >= 270 and mouse_y < 370:
-                on_clicker = True
-        
-        on_uncle = False
-        if mouse_x >= 1440 and mouse_x < 1590:
-            if mouse_y >= 270+101 and mouse_y < 370+101:
-                on_uncle = True
-        
-        on_farm = False
-        if mouse_x >= 1440 and mouse_x < 1590:
-            if mouse_y >= 270+202 and mouse_y < 370+202:
-                on_farm = True
-        
-        on_house = False
-        if mouse_x >= 1440 and mouse_x < 1590:
-            if mouse_y >= 270+303 and mouse_y < 370+303:
-                on_house = True
-        
-        on_mill = False
-        if mouse_x >= 1440 and mouse_x < 1590:
-            if mouse_y >= 270+404 and mouse_y < 370+404:
-                on_mill = True
-        
-        on_market = False
-        if mouse_x >= 1440 + 151 and mouse_x < 1590 + 151:
-            if mouse_y >= 270 and mouse_y < 370:
-                on_market = True
-        
-        on_tower = False
-        if mouse_x >= 1440 + 151 and mouse_x < 1590 + 151:
-            if mouse_y >= 270 and mouse_y < 370+101:
-                on_tower = True
-
-        on_castle = False
-        if mouse_x >= 1440 + 151 and mouse_x < 1590 + 151:
-            if mouse_y >= 270 and mouse_y < 370+202:
-                on_castle = True
-
-        on_church = False
-        if mouse_x >= 1440 + 151 and mouse_x < 1590 + 151:
-            if mouse_y >= 270 and mouse_y < 370+303:
-                on_church = True
-        
-        
-        
-
-        # TO ADD: save data when to a file when this is called
-        for event in pygame.event.get():
-            # Ends game when button close is pressed
-            if event.type == QUIT:
-                return
+        elif active_screen == "save_screen":
             
-            # Checks if mouse clicks on a box
-            elif event.type == MOUSEBUTTONDOWN:
-                if on_bread == True:
-                    player.coin_update("Click") 
+            #temp
+            active_screen = "bread"
+            pass
 
-                elif on_rebirth == True:
-                    incarn_screen(player, clock, screen)   
-                
-                elif on_clicker == True:
-                    if player.coins >= clicker.price:
-                        clicker.object_bought(player)
-                        clicker.generation_grow(player)    
-                        clicker.click_increase_check(player)
-
-                elif on_uncle == True:
-                    if player.coins >= uncle.price:
-                        uncle.object_bought(player)
-                        uncle.generation_grow(player)    
-                        uncle.click_increase_check(player)
-                
-                elif on_farm == True:
-                    if player.coins >= farm.price:
-                        farm.object_bought(player)
-                        farm.generation_grow(player)    
-                        farm.click_increase_check(player)
-
-                elif on_house == True:
-                    if player.coins >= house.price:
-                        house.object_bought(player)
-                        house.generation_grow(player)    
-                        house.click_increase_check(player)
-                    
-                elif on_mill == True:
-                    if player.coins >= mill.price:
-                        mill.object_bought(player)
-                        mill.generation_grow(player)    
-                        mill.click_increase_check(player)
-                    
-                elif on_market == True:
-                    if player.coins >= market.price:
-                        market.object_bought(player)
-                        market.generation_grow(player)    
-                        market.click_increase_check(player)
-                
-                elif on_tower == True:
-                    if player.coins >= tower.price:
-                        tower.object_bought(player)
-                        tower.generation_grow(player)    
-                        tower.click_increase_check(player)
-                
-                elif on_castle == True:
-                    if player.coins >= castle.price:
-                        castle.object_bought(player)
-                        castle.generation_grow(player)    
-                        castle.click_increase_check(player)
-                
-                elif on_church == True:
-                    if player.coins >= church.price:
-                        church.object_bought(player)
-                        church.generation_grow(player)    
-                        church.click_increase_check(player)
                     
         pygame.display.flip()
 
@@ -737,4 +598,3 @@ def main():
 if __name__ == "__main__":
 
     main()
-
