@@ -5,8 +5,6 @@ from pygame.locals import *
 import math
 
 
-global active_screen 
-global clicker, uncle, farm, house, mill, market, tower, castle, church
 
 class Player:
 
@@ -103,6 +101,29 @@ def get_mouse():
     return mouse_x, mouse_y
 
 
+def add_outline_to_image(image: pygame.Surface, thickness: int, color: tuple, color_key: tuple = (255, 0, 255)) -> pygame.Surface:
+
+
+    # Source - https://stackoverflow.com/a/71439893
+# Posted by Vito Gentile, modified by community. See post 'Timeline' for change history
+# Retrieved 2026-03-16, License - CC BY-SA 4.0
+
+    mask = pygame.mask.from_surface(image)
+    mask_surf = mask.to_surface(setcolor=color)
+    mask_surf.set_colorkey((0, 0, 0))
+
+    new_img = pygame.Surface((image.get_width() + 2, image.get_height() + 2))
+    new_img.fill(color_key)
+    new_img.set_colorkey(color_key)
+
+    for i in -thickness, thickness:
+        new_img.blit(mask_surf, (i + thickness, thickness))
+        new_img.blit(mask_surf, (thickness, i + thickness))
+    new_img.blit(image, (thickness, thickness))
+
+    return new_img
+
+
 def value_scale_text(coins, passive_income):
     """
     solution taken from:
@@ -151,20 +172,22 @@ def draw_building_button(screen, location_x, location_y, type, building):
     screen.blit(text, text_rect)
 
 
-def draw_money(player,screen):
+def draw_money(player,screen,color=(255,255,255),ol_color=(1,1,1)):
 
     # Update coin counter display value and coins per second
     font_unique = pygame.font.SysFont(None, 100)
     coin_output = value_scale_text(player.coins, False)
-    text = font_unique.render(coin_output, True, (255, 255, 255))
+    text = font_unique.render(coin_output, False, (color)).convert()
+    text_with_ol = add_outline_to_image(text, 1.5, (ol_color))
     text_rect = text.get_rect(center=((1920/2), 125))
-    screen.blit(text, text_rect)
+    screen.blit(text_with_ol, text_rect)
 
     font_small = pygame.font.SysFont(None, 35)
     passive_income = value_scale_text(player.passive_income, True)
-    text = font_small.render(passive_income+" per second", True, (255, 255, 255))
+    text = font_small.render(passive_income+" per second", False, (color)).convert()
+    text_with_ol = add_outline_to_image(text, 0.75, (ol_color))
     text_rect = text.get_rect(center=((1920/2), 225))
-    screen.blit(text, text_rect)
+    screen.blit(text_with_ol, text_rect)
 
 
 def incarn_screen(player, clock, screen):
@@ -204,6 +227,7 @@ def bread_screen(player,clock,screen):
     
     global active_screen
     global clicker, uncle, farm, house, mill, market, tower, castle, church
+    global bread_sprite, bg_sprite, uncle_sprite, farm_sprite, mill_sprite, market_sprite, tower_sprite, castle_sprite, church_sprite
 
     while True:
 
@@ -215,9 +239,27 @@ def bread_screen(player,clock,screen):
             return
 
         screen.fill((0,0,0))
+        screen.blit(bg_sprite, (0,0))
 
         # Loads bread icon every frame
-        pygame.draw.rect(screen, (181, 103, 0), ((1920/2)-250, 1080/4, 500, 500), 0) 
+        #pygame.draw.rect(screen, (181, 103, 0), ((1920/2)-250, 1080/4, 500, 500), 0) 
+        
+        if uncle.owned >= 1:
+            screen.blit(uncle_sprite, (0,0))
+        if farm.owned >= 1:
+            screen.blit(farm_sprite, (0,0))
+        if mill.owned >= 1:
+            screen.blit(mill_sprite, (0,0))
+        if market.owned >= 1:
+            screen.blit(market_sprite, (0,0))
+        if tower.owned >= 1:
+            screen.blit(tower_sprite, (0,0))
+        if castle.owned >= 1:
+            screen.blit(castle_sprite, (0,0))
+        if church.owned >= 1:
+            screen.blit(church_sprite, (0,0))
+        
+        screen.blit(bread_sprite, (0,0))
 
         draw_money(player,screen)
         
@@ -246,6 +288,7 @@ def upgrade_screen(player,clock,screen):
     
     global active_screen
     global clicker, uncle, farm, house, mill, market, tower, castle, church
+    global upgrade_bg_sprite
 
     while True:
 
@@ -257,7 +300,8 @@ def upgrade_screen(player,clock,screen):
         clock.tick(60)
 
         screen.fill((0,0,0))
-        draw_money(player,screen)
+        screen.blit(upgrade_bg_sprite, (0,0))
+        draw_money(player,screen,(1,1,1),(100,100,100))
 
         draw_building_button(screen, ((1920/4)*3), 1080/4, "Clicker", clicker)
         draw_building_button(screen, ((1920/4)*3), (1080/4)+101, "Uncle", uncle) 
@@ -570,6 +614,12 @@ def main_menu(player,clock,screen):
 def main():
     # Initialise screen
     pygame.init()
+
+    #variables
+    global active_screen 
+    global clicker, uncle, farm, house, mill, market, tower, castle, church
+
+
     screen = pygame.display.set_mode((1920, 1080))
     pygame.display.set_caption("Bakery Clicker")
     font_base = pygame.font.SysFont(None, 50)
@@ -579,6 +629,23 @@ def main():
     background = background.convert()
     background.fill((0, 0, 0))
 
+    #Sprites
+    global bread_sprite 
+    global bg_sprite
+    global upgrade_bg_sprite
+    global uncle_sprite, farm_sprite, mill_sprite, market_sprite, tower_sprite, castle_sprite, church_sprite
+
+    uncle_sprite = pygame.image.load(r'Sprites\Game_sprites\Uncle_Sprite.png').convert_alpha()
+    farm_sprite = pygame.image.load(r'Sprites\Game_sprites\Farm_Sprite.png').convert_alpha()
+    mill_sprite = pygame.image.load(r'Sprites\Game_sprites\Mill_Sprite.png').convert_alpha()
+    market_sprite = pygame.image.load(r'Sprites\Game_sprites\Market_Sprite.png').convert_alpha()
+    tower_sprite = pygame.image.load(r'Sprites\Game_sprites\Tower_Sprite.png').convert_alpha()
+    castle_sprite = pygame.image.load(r'Sprites\Game_sprites\Castle_Sprite.png').convert_alpha()
+    church_sprite = pygame.image.load(r'Sprites\Game_sprites\Church_Sprite.png').convert_alpha()
+    upgrade_bg_sprite = pygame.image.load(r'Sprites\Game_sprites\Upgrade_bg.png').convert_alpha()
+    bg_sprite = pygame.image.load(r'Sprites\Game_sprites\Base_Background_Sprite.png').convert_alpha()
+    bread_sprite = pygame.image.load(r'Sprites\Game_sprites\Bread_sprite_fix.png').convert_alpha()
+
     # Blit everything to the screen
     screen.blit(background, (0, 0))
     pygame.display.flip()
@@ -586,7 +653,7 @@ def main():
     # Initialise clock
     clock = pygame.time.Clock()
 
-    player = Player()
+    player = Player(100000000000000000)
     
     # Opens main menu of game
     main_menu(player,clock,screen)
