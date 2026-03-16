@@ -6,6 +6,7 @@ import math
 
 
 global active_screen 
+global clicker, uncle, farm, house, mill, market, tower, castle, church
 
 class Player:
 
@@ -121,6 +122,7 @@ def value_scale_text(coins, passive_income):
 
     elif coins < 1000 and passive_income == True:
         return f'{n:.1f}'
+    
     else:
         millidx = max(0,min(len(cash_suffix)-1,
                             int(math.floor(0 if n == 0 else math.log10(abs(n))/3))))
@@ -168,6 +170,7 @@ def draw_money(player,screen):
 def incarn_screen(player, clock, screen):
 
     global active_screen
+    global clicker, uncle, farm, house, mill, market, tower, castle, church
 
     while True:
 
@@ -176,8 +179,10 @@ def incarn_screen(player, clock, screen):
 
         clock.tick(60)
 
+        player.coin_update("Passive")
+        
         screen.fill((0,0,0))
-        pygame.display.flip()
+        
 
         mouse_x, mouse_y = get_mouse()
         
@@ -191,15 +196,20 @@ def incarn_screen(player, clock, screen):
                 bottom_bar_click_check(mouse_x, mouse_y)
     
         bottom_bar(screen)
+        
+        pygame.display.flip()
 
 
 def bread_screen(player,clock,screen):
     
     global active_screen
+    global clicker, uncle, farm, house, mill, market, tower, castle, church
 
     while True:
 
         clock.tick(60)
+
+        player.coin_update("Passive")
 
         if active_screen != "bread":
             return
@@ -220,7 +230,8 @@ def bread_screen(player,clock,screen):
             
             elif event.type == MOUSEBUTTONDOWN:
                 
-                bottom_bar_click_check(mouse_x, mouse_y)
+                if mouse_y <= 1080+100:
+                    bottom_bar_click_check(mouse_x, mouse_y)
 
                 if ((1920/2)-250) <= mouse_x < ((1920/2)+250):
                     if ((1080/4)) <= mouse_y < ((1080/4)+500):
@@ -234,8 +245,11 @@ def bread_screen(player,clock,screen):
 def upgrade_screen(player,clock,screen):
     
     global active_screen
+    global clicker, uncle, farm, house, mill, market, tower, castle, church
 
     while True:
+
+        player.coin_update("Passive")
 
         if active_screen != "upgrades":
             return
@@ -243,128 +257,8 @@ def upgrade_screen(player,clock,screen):
         clock.tick(60)
 
         screen.fill((0,0,0))
+        draw_money(player,screen)
 
-        mouse_x, mouse_y = get_mouse()
-        
-        for event in pygame.event.get():
-            
-            if event.type == QUIT:
-                sys.exit()
-            
-            elif event.type == MOUSEBUTTONDOWN:
-                
-                bottom_bar_click_check(mouse_x, mouse_y)
-        
-        bottom_bar(screen)
-
-        pygame.display.flip()
-    
-    return
-        
-
-
-def bottom_bar(screen):
-
-    global active_screen
-    
-    pygame.draw.rect(screen, (255, 255, 255), (0, 980, 1920/4, 100), 0) 
-    pygame.draw.rect(screen, (255, 255, 255), ((1920/4)+1, 980, 1920/4, 100), 0) 
-    pygame.draw.rect(screen, (255, 255, 255), ((1920/2)+2, 980, 1920/4, 100), 0) 
-    pygame.draw.rect(screen, (255, 255, 255), (1920/1.33, 980, 1920/4, 100), 0) 
-
-    font_unique = pygame.font.SysFont(None, 100)
-    text = font_unique.render("Town", True, (0, 0, 0))
-    text_rect = text.get_rect(center=((1920/8), 1080-50))
-    screen.blit(text, text_rect)
-
-    font_unique = pygame.font.SysFont(None, 100)
-    text = font_unique.render("Upgrades", True, (0, 0, 0))
-    text_rect = text.get_rect(center=((1920/8)+((1920/4)+1), 1080-50))
-    screen.blit(text, text_rect)
-
-    font_unique = pygame.font.SysFont(None, 100)
-    text = font_unique.render("Incarnation", True, (0, 0, 0))
-    text_rect = text.get_rect(center=((1920/2.6)+((1920/4)+2), 1080-50))
-    screen.blit(text, text_rect)
-
-    font_unique = pygame.font.SysFont(None, 100)
-    text = font_unique.render("Menu", True, (0, 0, 0))
-    text_rect = text.get_rect(center=((1920/1.6)+((1920/4)), 1080-50))
-    screen.blit(text, text_rect)
-    
-    for event in pygame.event.get():
-            
-            if event.type == QUIT:
-                sys.exit()
-            
-    return 
-
-
-def bottom_bar_click_check(mouse_x, mouse_y):
-    
-    global active_screen
-
-    if (0) <= mouse_x < (480):
-        if (1080-100) <= mouse_y < (1080):
-                active_screen = "bread"
-
-    elif (481) <= mouse_x < (481+480):
-        if (1080-100) <= mouse_y < (1080):
-            active_screen = "upgrades"      
-    
-    elif (481*2) <= mouse_x < ((481*2)+480):
-        if (1080-100) <= mouse_y < (1080):
-            active_screen = "incarnation"       
-    
-    elif (481*3) <= mouse_x < ((481*3)+480):
-        if (1080-100) <= mouse_y < (1080):
-            active_screen = "menu"      
-
-
-def game_loop(player, clock, screen):
-    #Controls loop for gameplay screen and logic
-    
-    global active_screen
-
-    #Loads building objects
-    clicker = Buildings(10, 0, 0.1)
-    uncle = Buildings(100, 0, 1)
-    farm = Buildings(1000, 0, 10)
-    house = Buildings(10000, 0, 100)
-    mill = Buildings(100000, 0, 1000)
-    market = Buildings(1000000, 0, 10000)  
-    tower = Buildings(10000000, 0, 100000)
-    castle = Buildings(100000000, 0, 1000000)
-    church = Buildings(1000000000, 0, 10000000)
-    
-    active_screen = "bread"
-    while True:
-
-        player.coin_update("Passive")
-
-        # locks game to 60fps
-        clock.tick(60)
-
-        # Clears screen every frame to update dynamic text
-        screen.fill((0, 0, 0))
-
-        # Loads the 4 unique screns
-        if active_screen == "bread":   
-            bread_screen(player, clock, screen)
-
-        elif active_screen == "upgrades":
-            upgrade_screen(player, clock, screen)
-
-        elif active_screen == "incarnation":
-            incarn_screen(player, clock, screen)
-
-        elif active_screen == "menu":
-            main_menu(player, clock, screen)
-
-        # Load rebirth button
-        pygame.draw.rect(screen, (255, 255, 255), (1520, 70, 150, 100), 0)
-
-        # Loads shop frames
         draw_building_button(screen, ((1920/4)*3), 1080/4, "Clicker", clicker)
         draw_building_button(screen, ((1920/4)*3), (1080/4)+101, "Uncle", uncle) 
         draw_building_button(screen, ((1920/4)*3), (1080/4)+202, "Farm", farm) 
@@ -374,28 +268,9 @@ def game_loop(player, clock, screen):
         draw_building_button(screen, ((1920/4)*3) + 151, (1080/4)+101, "Wizzard Tower", tower) 
         draw_building_button(screen, ((1920/4)*3) + 151, (1080/4)+202, "Castle", castle)
         draw_building_button(screen, ((1920/4)*3) + 151, (1080/4)+303, "Church", church)
-        
 
-        # Update coin counter display value and coins per second
-        
-        draw_money(player, screen)
-
-        # Check mouse location and gives an x and y co-ordinate
         mouse_x, mouse_y = get_mouse()
-        
-        # Checks is mouse is on rebirth button
-        on_rebirth = False
-        if mouse_x >= 1520 and mouse_x < 1670:
-            if mouse_y >= 70 and mouse_y < 170:
-                on_rebirth = True
 
-        # Checks if mouse is hovering over the bakery shop
-        on_bread = False
-        if mouse_x >= 150 and mouse_x < 650:
-            if mouse_y >= 270 and mouse_y < 770:
-                on_bread = True
-        
-        # Checks if mouse over a shop icon
         on_clicker = False
         if mouse_x >= 1440 and mouse_x < 1590:
             if mouse_y >= 270 and mouse_y < 370:
@@ -440,25 +315,18 @@ def game_loop(player, clock, screen):
         if mouse_x >= 1440 + 151 and mouse_x < 1590 + 151:
             if mouse_y >= 270 and mouse_y < 370+303:
                 on_church = True
-        
-        
-        
 
-        # TO ADD: save data when to a file when this is called
         for event in pygame.event.get():
-            # Ends game when button close is pressed
-            if event.type == QUIT:
-                return
             
-            # Checks if mouse clicks on a box
+            if event.type == QUIT:
+                sys.exit()
+            
             elif event.type == MOUSEBUTTONDOWN:
-                if on_bread == True:
-                    player.coin_update("Click") 
-
-                elif on_rebirth == True:
-                    incarn_screen(player, clock, screen)   
                 
-                elif on_clicker == True:
+                if mouse_y <= 1080+100:
+                    bottom_bar_click_check(mouse_x, mouse_y) 
+                
+                if on_clicker == True:
                     if player.coins >= clicker.price:
                         clicker.object_bought(player)
                         clicker.generation_grow(player)    
@@ -511,6 +379,112 @@ def game_loop(player, clock, screen):
                         church.object_bought(player)
                         church.generation_grow(player)    
                         church.click_increase_check(player)
+
+        bottom_bar(screen)
+
+        pygame.display.flip()
+
+
+def bottom_bar(screen):
+    
+    pygame.draw.rect(screen, (255, 255, 255), (0, 980, 1920/4, 100), 0) 
+    pygame.draw.rect(screen, (255, 255, 255), ((1920/4)+1, 980, 1920/4, 100), 0) 
+    pygame.draw.rect(screen, (255, 255, 255), ((1920/2)+2, 980, 1920/4, 100), 0) 
+    pygame.draw.rect(screen, (255, 255, 255), (1920/1.33, 980, 1920/4, 100), 0) 
+
+    font_unique = pygame.font.SysFont(None, 100)
+    text = font_unique.render("Town", True, (0, 0, 0))
+    text_rect = text.get_rect(center=((1920/8), 1080-50))
+    screen.blit(text, text_rect)
+
+    font_unique = pygame.font.SysFont(None, 100)
+    text = font_unique.render("Upgrades", True, (0, 0, 0))
+    text_rect = text.get_rect(center=((1920/8)+((1920/4)+1), 1080-50))
+    screen.blit(text, text_rect)
+
+    font_unique = pygame.font.SysFont(None, 100)
+    text = font_unique.render("Incarnation", True, (0, 0, 0))
+    text_rect = text.get_rect(center=((1920/2.6)+((1920/4)+2), 1080-50))
+    screen.blit(text, text_rect)
+
+    font_unique = pygame.font.SysFont(None, 100)
+    text = font_unique.render("Menu", True, (0, 0, 0))
+    text_rect = text.get_rect(center=((1920/1.6)+((1920/4)), 1080-50))
+    screen.blit(text, text_rect)
+            
+    return 
+
+
+def bottom_bar_click_check(mouse_x, mouse_y):
+    
+    global active_screen
+
+    if (0) <= mouse_x < (480):
+        if (1080-100) <= mouse_y < (1080):
+                active_screen = "bread"
+
+    elif (481) <= mouse_x < (481+480):
+        if (1080-100) <= mouse_y < (1080):
+            active_screen = "upgrades"      
+    
+    elif (481*2) <= mouse_x < ((481*2)+480):
+        if (1080-100) <= mouse_y < (1080):
+            active_screen = "incarnation"       
+    
+    elif (481*3) <= mouse_x < ((481*3)+480):
+        if (1080-100) <= mouse_y < (1080):
+            active_screen = "menu"      
+
+
+def game_loop(player, clock, screen):
+    #Controls loop for gameplay screen and logic
+    
+    global active_screen
+
+    global clicker, uncle, farm, house, mill, market, tower, castle, church
+    
+    #Loads building objects
+    clicker = Buildings(10, 0, 0.1)
+    uncle = Buildings(100, 0, 1)
+    farm = Buildings(1000, 0, 10)
+    house = Buildings(10000, 0, 100)
+    mill = Buildings(100000, 0, 1000)
+    market = Buildings(1000000, 0, 10000)  
+    tower = Buildings(10000000, 0, 100000)
+    castle = Buildings(100000000, 0, 1000000)
+    church = Buildings(1000000000, 0, 10000000)
+    
+    active_screen = "bread"
+    
+    while True:
+
+        player.coin_update("Passive")
+
+        # locks game to 60fps
+        clock.tick(60)
+
+        # Clears screen every frame to update dynamic text
+        screen.fill((0, 0, 0))
+
+        # Loads the 4 unique screns
+        if active_screen == "bread":   
+            bread_screen(player, clock, screen)
+
+        elif active_screen == "upgrades":
+            upgrade_screen(player, clock, screen)
+
+        elif active_screen == "incarnation":
+            incarn_screen(player, clock, screen)
+
+        elif active_screen == "menu":
+            main_menu(player, clock, screen)
+
+        elif active_screen == "save_screen":
+            
+            #temp
+            active_screen = "bread"
+            pass
+
                     
         pygame.display.flip()
 
@@ -624,4 +598,3 @@ def main():
 if __name__ == "__main__":
 
     main()
-
