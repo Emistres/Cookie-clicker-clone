@@ -3,6 +3,7 @@ import pygame
 from socket import *
 from pygame.locals import *
 import math
+import os
 
 
 
@@ -14,7 +15,7 @@ class Player:
     def __init__ (self, coins=0, click_value=1, passive_income=0):
         
         self.coins = float(coins)
-        self.click_value = click_value
+        self.click_value = int(click_value)
         self.passive_income = float(passive_income)
 
 
@@ -49,12 +50,17 @@ class Player:
 class Buildings:
     # Contains all logic for buildings
     
-    def __init__ (self, price, owned, generation):
+    def __init__ (self, price, owned, generation, base_price=None):
         
-        self.price = price
-        self.owned = owned
-        self.generation = generation
-        self.base_price = self.price
+        self.price = int(price)
+        self.owned = int(owned)
+        self.generation = float(generation)
+        
+        if base_price == None:
+            self.base_price = self.price
+        
+        else:
+            self.base_price = int(base_price)
         
     
     def generation_grow(self, player):
@@ -105,8 +111,8 @@ def add_outline_to_image(image: pygame.Surface, thickness: int, color: tuple, co
 
 
     # Source - https://stackoverflow.com/a/71439893
-# Posted by Vito Gentile, modified by community. See post 'Timeline' for change history
-# Retrieved 2026-03-16, License - CC BY-SA 4.0
+    # Posted by Vito Gentile, modified by community. See post 'Timeline' for change history
+    # Retrieved 2026-03-16, License - CC BY-SA 4.0
 
     mask = pygame.mask.from_surface(image)
     mask_surf = mask.to_surface(setcolor=color)
@@ -290,6 +296,8 @@ def upgrade_screen(player,clock,screen):
     global clicker, uncle, farm, house, mill, market, tower, castle, church
     global upgrade_bg_sprite
 
+    mouse_down = False
+
     while True:
 
         player.coin_update("Passive")
@@ -366,63 +374,72 @@ def upgrade_screen(player,clock,screen):
                 sys.exit()
             
             elif event.type == MOUSEBUTTONDOWN:
-                
+
                 if mouse_y <= 1080+100:
                     bottom_bar_click_check(mouse_x, mouse_y) 
                 
-                if on_clicker == True:
-                    if player.coins >= clicker.price:
-                        clicker.object_bought(player)
-                        clicker.generation_grow(player)    
-                        clicker.click_increase_check(player)
+                mouse_down = True
 
-                elif on_uncle == True:
-                    if player.coins >= uncle.price:
-                        uncle.object_bought(player)
-                        uncle.generation_grow(player)    
-                        uncle.click_increase_check(player)
-                
-                elif on_farm == True:
-                    if player.coins >= farm.price:
-                        farm.object_bought(player)
-                        farm.generation_grow(player)    
-                        farm.click_increase_check(player)
+            elif event.type == MOUSEBUTTONUP:
+                mouse_down = False
 
-                elif on_house == True:
-                    if player.coins >= house.price:
-                        house.object_bought(player)
-                        house.generation_grow(player)    
-                        house.click_increase_check(player)
+        if mouse_down == True:
+
+            if on_clicker == True:
+                if player.coins >= clicker.price:
+                    clicker.object_bought(player)
+                    clicker.generation_grow(player)    
+                    clicker.click_increase_check(player)
+
+            elif on_uncle == True:
+                if player.coins >= uncle.price:
+                    uncle.object_bought(player)
+                    uncle.generation_grow(player)    
+                    uncle.click_increase_check(player)
+            
+            elif on_farm == True:
+                if player.coins >= farm.price:
+                    farm.object_bought(player)
+                    farm.generation_grow(player)    
+                    farm.click_increase_check(player)
+
+            elif on_house == True:
+                if player.coins >= house.price:
+                    house.object_bought(player)
+                    house.generation_grow(player)    
+                    house.click_increase_check(player)
+                
+            elif on_mill == True:
+                if player.coins >= mill.price:
+                    mill.object_bought(player)
+                    mill.generation_grow(player)    
+                    mill.click_increase_check(player)
+                
+            elif on_market == True:
+                if player.coins >= market.price:
+                    market.object_bought(player)
+                    market.generation_grow(player)    
+                    market.click_increase_check(player)
+            
+            elif on_tower == True:
+                if player.coins >= tower.price:
+                    tower.object_bought(player)
+                    tower.generation_grow(player)    
+                    tower.click_increase_check(player)
+            
+            elif on_castle == True:
+                if player.coins >= castle.price:
+                    castle.object_bought(player)
+                    castle.generation_grow(player)    
+                    castle.click_increase_check(player)
+            
+            elif on_church == True:
+                if player.coins >= church.price:
+                    church.object_bought(player)
+                    church.generation_grow(player)    
+                    church.click_increase_check(player)
                     
-                elif on_mill == True:
-                    if player.coins >= mill.price:
-                        mill.object_bought(player)
-                        mill.generation_grow(player)    
-                        mill.click_increase_check(player)
                     
-                elif on_market == True:
-                    if player.coins >= market.price:
-                        market.object_bought(player)
-                        market.generation_grow(player)    
-                        market.click_increase_check(player)
-                
-                elif on_tower == True:
-                    if player.coins >= tower.price:
-                        tower.object_bought(player)
-                        tower.generation_grow(player)    
-                        tower.click_increase_check(player)
-                
-                elif on_castle == True:
-                    if player.coins >= castle.price:
-                        castle.object_bought(player)
-                        castle.generation_grow(player)    
-                        castle.click_increase_check(player)
-                
-                elif on_church == True:
-                    if player.coins >= church.price:
-                        church.object_bought(player)
-                        church.generation_grow(player)    
-                        church.click_increase_check(player)
 
         bottom_bar(screen)
 
@@ -486,19 +503,11 @@ def game_loop(player, clock, screen):
     global active_screen
 
     global clicker, uncle, farm, house, mill, market, tower, castle, church
+
+    first_loop = False
     
     #Loads building objects
-    clicker = Buildings(10, 0, 0.1)
-    uncle = Buildings(100, 0, 1)
-    farm = Buildings(1000, 0, 10)
-    house = Buildings(10000, 0, 100)
-    mill = Buildings(100000, 0, 1000)
-    market = Buildings(1000000, 0, 10000)  
-    tower = Buildings(10000000, 0, 100000)
-    castle = Buildings(100000000, 0, 1000000)
-    church = Buildings(1000000000, 0, 10000000)
     
-    active_screen = "bread"
     
     while True:
 
@@ -521,21 +530,25 @@ def game_loop(player, clock, screen):
             incarn_screen(player, clock, screen)
 
         elif active_screen == "menu":
-            main_menu(player, clock, screen)
+            main_menu(player, clock, screen, first_loop)
 
         elif active_screen == "save_screen":
             
-            #temp
-            active_screen = "bread"
-            pass
+            save_screen(player,clock,screen)
+
+        elif active_screen == "load_screen":
+            
+            load_save_screen(player,clock,screen)
 
                     
         pygame.display.flip()
 
 
-def main_menu(player,clock,screen):
+def main_menu(player,clock,screen,first_loop):
     # Controls the main menu logic for the game and loads as inital screen
     global active_screen
+
+    global clicker, uncle, farm, house, mill, market, tower, castle, church
     
     font_base = pygame.font.SysFont(None, 50)
     
@@ -557,10 +570,17 @@ def main_menu(player,clock,screen):
         pygame.draw.rect(screen, (225, 225, 255), (540, 550, 850, 100)) #load save
         pygame.draw.rect(screen, (225, 225, 255), (540, 700, 850, 100)) #quit game
 
-        # Writes text on menu buttons
-        text = font_base.render("New game", True, (0, 0, 0))
-        text_rect = text.get_rect(center=(1920/2, 450))
-        screen.blit(text, text_rect)
+        if first_loop == True:
+            # Writes text on menu buttons
+            text = font_base.render("New game", True, (0, 0, 0))
+            text_rect = text.get_rect(center=(1920/2, 450))
+            screen.blit(text, text_rect)
+        
+        if first_loop == False:
+            # Writes text on menu buttons
+            text = font_base.render("Save and exit game", True, (0, 0, 0))
+            text_rect = text.get_rect(center=(1920/2, 450))
+            screen.blit(text, text_rect)
 
         text = font_base.render("Load game", True, (0, 0, 0))
         text_rect = text.get_rect(center=(1920/2, 600))
@@ -595,12 +615,17 @@ def main_menu(player,clock,screen):
                 sys.exit()
             
             if event.type == MOUSEBUTTONDOWN:
-                if on_new_game == True:
+                if on_new_game == True and first_loop == True:
+                    first_loop = False
                     active_screen = "bread"
                     return
                 
-                elif on_load_game == True:
+                if on_new_game == True and first_loop == False:
                     active_screen = "save_screen"
+                    return
+
+                elif on_load_game == True:
+                    active_screen = "load_screen"
                     return
                 
                 elif on_close_game == True:
@@ -611,14 +636,245 @@ def main_menu(player,clock,screen):
         pygame.display.flip()
     
 
+def load_save_screen(player,clock,screen):
+    
+    global active_screen
+    
+    font_base = pygame.font.SysFont(None, 50)
+    
+    while True:
+        # 60 fps limit
+        clock.tick(60)
+        
+        # Clears screen every frame to update dynamic text
+        screen.fill((0, 0, 0))
+
+        # Writes name of game in larger font
+        font_unique = pygame.font.SysFont(None, 200)
+        text = font_unique.render("Bakery clicker", True, (225, 225, 255))
+        text_rect = text.get_rect(center=(1920/2, 150))
+        screen.blit(text, text_rect)
+
+        # Draws menu buttons
+        pygame.draw.rect(screen, (225, 225, 255), (540, 400, 850, 100)) #new game
+        pygame.draw.rect(screen, (225, 225, 255), (540, 550, 850, 100)) #load save
+        pygame.draw.rect(screen, (225, 225, 255), (540, 700, 850, 100)) #quit game
+
+        # Writes text on menu buttons
+        text = font_base.render("Slot 1", True, (0, 0, 0))
+        text_rect = text.get_rect(center=(1920/2, 450))
+        screen.blit(text, text_rect)
+
+        text = font_base.render("Slot 2", True, (0, 0, 0))
+        text_rect = text.get_rect(center=(1920/2, 600))
+        screen.blit(text, text_rect)
+
+        text = font_base.render("Slot 3", True, (0, 0, 0))
+        text_rect = text.get_rect(center=(1920/2, 750))
+        screen.blit(text, text_rect)
+
+        pygame.display.flip()
+
+        # Check mouse location and gives an x and y co-ordinate
+        mouse_x, mouse_y = get_mouse()
+
+        on_save_1 = False
+        if mouse_x >= 539 and mouse_x < 1390:
+            if mouse_y >= 399 and mouse_y < 497:
+                on_save_1 = True
+
+        on_save_2 = False
+        if mouse_x >= 539 and mouse_x < 1390:
+            if mouse_y >= 399+150 and mouse_y < 497+150:
+                on_save_2 = True
+        
+        on_save_3 = False
+        if mouse_x >= 539 and mouse_x < 1390:
+            if mouse_y >= 399+300 and mouse_y < 497+300:
+                on_save_3 = True
+
+
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                sys.exit()
+            
+            if event.type == MOUSEBUTTONDOWN:
+                if on_save_1 == True:
+                    load_data(player,"save_1.txt")
+                    active_screen = "bread"
+                    return
+                
+                elif on_save_2 == True:
+                    load_data(player,"save_2.txt")
+                    active_screen = "bread"
+                    return
+
+                elif on_save_3 == True:
+                    load_data(player,"save_3.txt")
+                    active_screen = "bread"
+                    return
+    
+
+def save_screen(player,clock,screen):
+    
+    global active_screen
+    
+    font_base = pygame.font.SysFont(None, 50)
+    
+    while True:
+        # 60 fps limit
+        clock.tick(60)
+        
+        # Clears screen every frame to update dynamic text
+        screen.fill((0, 0, 0))
+
+        # Writes name of game in larger font
+        font_unique = pygame.font.SysFont(None, 200)
+        text = font_unique.render("Bakery clicker", True, (225, 225, 255))
+        text_rect = text.get_rect(center=(1920/2, 150))
+        screen.blit(text, text_rect)
+
+        # Draws menu buttons
+        pygame.draw.rect(screen, (225, 225, 255), (540, 400, 850, 100)) #new game
+        pygame.draw.rect(screen, (225, 225, 255), (540, 550, 850, 100)) #load save
+        pygame.draw.rect(screen, (225, 225, 255), (540, 700, 850, 100)) #quit game
+
+        # Writes text on menu buttons
+        text = font_base.render("Slot 1", True, (0, 0, 0))
+        text_rect = text.get_rect(center=(1920/2, 450))
+        screen.blit(text, text_rect)
+
+        text = font_base.render("Slot 2", True, (0, 0, 0))
+        text_rect = text.get_rect(center=(1920/2, 600))
+        screen.blit(text, text_rect)
+
+        text = font_base.render("Slot 3", True, (0, 0, 0))
+        text_rect = text.get_rect(center=(1920/2, 750))
+        screen.blit(text, text_rect)
+
+        pygame.display.flip()
+
+        # Check mouse location and gives an x and y co-ordinate
+        mouse_x, mouse_y = get_mouse()
+
+        on_save_1 = False
+        if mouse_x >= 539 and mouse_x < 1390:
+            if mouse_y >= 399 and mouse_y < 497:
+                on_save_1 = True
+
+        on_save_2 = False
+        if mouse_x >= 539 and mouse_x < 1390:
+            if mouse_y >= 399+150 and mouse_y < 497+150:
+                on_save_2 = True
+        
+        on_save_3 = False
+        if mouse_x >= 539 and mouse_x < 1390:
+            if mouse_y >= 399+300 and mouse_y < 497+300:
+                on_save_3 = True
+
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                sys.exit()
+            
+            if event.type == MOUSEBUTTONDOWN:
+                if on_save_1 == True:
+                    save_data(player,"save_1.txt")
+                    sys.exit()
+                
+                elif on_save_2 == True:
+                    save_data(player,"save_2.txt")
+                    sys.exit()
+
+                elif on_save_3 == True:
+                    save_data(player,"save_3.txt")
+                    sys.exit()
+
+
+def save_data(player,save):
+    
+    global clicker, uncle, farm, house, mill, market, tower, castle, church
+
+    upgrades = [clicker, uncle, farm, house, mill, market, tower, castle, church]
+    
+    with open(os.path.join("Saves",save), "w") as file:
+        file.write(f"{player.coins}\n{player.click_value}\n{player.passive_income}\n\n")
+        for upgrade in upgrades:
+            file.write(f"{upgrade.price}\n{upgrade.owned}\n{upgrade.generation}\n{upgrade.base_price}\n\n")
+    
+    return
+
+
+def load_data(player,save):
+
+    global clicker, uncle, farm, house, mill, market, tower, castle, church
+
+    upgrades = [clicker, uncle, farm, house, mill, market, tower, castle, church]
+    
+    with open(os.path.join("Saves",save), "r") as file:
+        try:
+            lines = file.readlines()
+            
+            player.coins = float(lines[0].strip())
+            player.click_value = int(lines[1].strip())
+            player.passive_income = float(lines[2].strip())
+
+            index = 4
+            for upgrade in upgrades:
+                upgrade.price = float(lines[index].strip())
+                upgrade.owned = int(lines[index+1].strip())
+                upgrade.generation = float(lines[index+2].strip())
+                upgrade.base_price = float(lines[index+3].strip())
+                index += 5
+        except:
+            return 
+    return
+
+
+def create_save_files():
+    
+    try:
+        if os.path.isfile("Saves","save_1.txt"):
+            pass
+        else:
+            with open(os.path.join("Saves","save_1.txt"), "w") as save:
+                pass     
+        
+        if os.path.isfile("Saves","save_2.txt"):
+            pass
+        else:
+            with open(os.path.join("Saves","save_2.txt"), "w") as save:
+                pass 
+        
+        if os.path.isfile("Saves","save_3.txt"):
+            pass
+        else:            
+            with open(os.path.join("Saves","save_3.txt"), "w") as save:
+                pass 
+    
+    except:
+        return
+
 def main():
+
+    create_save_files()
     # Initialise screen
     pygame.init()
 
     #variables
     global active_screen 
     global clicker, uncle, farm, house, mill, market, tower, castle, church
-
+    clicker = Buildings(10, 0, 0.1)
+    uncle = Buildings(100, 0, 1)
+    farm = Buildings(10000, 0, 10)
+    house = Buildings(10000, 0, 100)
+    mill = Buildings(100000, 0, 1000)
+    market = Buildings(1000000, 0, 10000)  
+    tower = Buildings(10000000, 0, 100000)
+    castle = Buildings(100000000, 0, 1000000)
+    church = Buildings(1000000000, 0, 10000000)
+    
+    
+    first_loop = True
 
     screen = pygame.display.set_mode((1920, 1080))
     pygame.display.set_caption("Bakery Clicker")
@@ -653,10 +909,11 @@ def main():
     # Initialise clock
     clock = pygame.time.Clock()
 
-    player = Player(100000000000000000)
+    player = Player()
+
     
     # Opens main menu of game
-    main_menu(player,clock,screen)
+    main_menu(player,clock,screen,first_loop)
     
     # Start main gameplay loop
     game_loop(player,clock,screen)
