@@ -865,7 +865,7 @@ def main():
     global clicker, uncle, farm, house, mill, market, tower, castle, church
     clicker = Buildings(10, 0, 0.1)
     uncle = Buildings(100, 0, 1)
-    farm = Buildings(10000, 0, 10)
+    farm = Buildings(1000, 0, 10)
     house = Buildings(10000, 0, 100)
     mill = Buildings(100000, 0, 1000)
     market = Buildings(1000000, 0, 10000)  
